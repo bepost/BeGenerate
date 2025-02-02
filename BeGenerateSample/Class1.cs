@@ -3,8 +3,10 @@
 namespace BeGenerateSample;
 
 [AutoInterface]
-public class SampleService
+internal class SampleService : ISampleService
 {
+    public int Test { get; set; }
+
     public int Add(int a, int b)
     {
         return a + b;
