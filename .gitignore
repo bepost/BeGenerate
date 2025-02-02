@@ -14,3 +14,6 @@ obj/
 !**/[Pp]ackages/build/
 *.nuget.props
 *.nuget.targets
+
+# Verifier output
+*.received.txt
