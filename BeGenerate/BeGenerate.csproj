@@ -16,7 +16,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BeGenerate.Abstractions\BeGenerate.Abstractions.csproj"/>
+    <ProjectReference Include="..\BeGenerate.Abstractions\BeGenerate.Abstractions.csproj" PrivateAssets="All"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pack the generator dll in the analyzers/dotnet/cs path -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+
+    <!-- Pack the attributes dll in the analyzers/dotnet/cs path -->
+    <None Include="$(OutputPath)\BeGenerate.Abstractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+
+    <!-- Pack the attributes dll in the lib\net8.0 path -->
+    <None Include="$(OutputPath)\BeGenerate.Abstractions.dll" Pack="true" PackagePath="lib\net8.0" Visible="true"/>
   </ItemGroup>
 
 </Project>

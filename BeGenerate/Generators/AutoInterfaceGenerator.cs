@@ -18,8 +18,7 @@ public sealed class AutoInterfaceGenerator : ISourceGenerator
         // Find all classes marked with [AutoInterface]
         var compilation = context.Compilation;
 
-        // TODO Typed
-        var autoInterfaceAttribute = compilation.GetTypeByMetadataName("BeGenerate.AutoInterfaceAttribute");
+        var autoInterfaceAttribute = compilation.GetTypeByMetadataName(typeof(AutoInterfaceAttribute).FullName!);
 
         foreach (var classDeclaration in receiver.CandidateClasses)
         {

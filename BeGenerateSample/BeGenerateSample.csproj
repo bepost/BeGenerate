@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BeGenerate.Abstractions\BeGenerate.Abstractions.csproj"/>
     <ProjectReference Include="..\BeGenerate\BeGenerate.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false"/>
+    <ProjectReference Include="..\BeGenerate.Abstractions\BeGenerate.Abstractions.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="true"/>
   </ItemGroup>
 
 </Project>
