@@ -47,9 +47,9 @@ jobs:
         run: dotnet test
           --no-build
           --configuration Release
-          /p:CollectCoverage=true
-          /p:CoverletOutputFormat=lcov
-          /p:CoverletOutput=coverage/
+          -p:CollectCoverage=true
+          -p:CoverletOutputFormat=lcov
+          -p:CoverletOutput=${PWD}/coverage/
 
       - name: Upload Coverage Report as Artifact
         uses: actions/upload-artifact@v4
