@@ -45,7 +45,8 @@ jobs:
           name: build
           path: |
             **/*.cproj
-            **/bin/Release/
+            **/bin/
+            **/obj/
 
   test:
     runs-on: ubuntu-latest
@@ -78,7 +79,7 @@ jobs:
           /p:CoverletOutput=coverage/
 
       - name: Upload Coverage Report as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: coverage-report
