@@ -5,10 +5,39 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
+
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+    <!-- ✅ NuGet Package Metadata -->
     <IsPackable>true</IsPackable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    
+    <PackageId>BeGenerate</PackageId>
+    <Version>0.1.0</Version>
+
+    <Authors>Bepost</Authors>
+    <Company>Bepost</Company>
+    <Product>BeGenerate</Product>
+    <Copyright>Copyright © 2025 Bepost</Copyright>
+    <Description>A collection of source generators for C#.</Description>
+    <PackageTags>SourceGenerator, Roslyn, CodeGeneration, BeGenerate</PackageTags>
+    <RepositoryUrl>https://github.com/bepost/BeGenerate</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/bepost/BeGenerate/blob/18634807a8e97a6fb138423ef72c4aaae915b332/LICENSE</PackageProjectUrl>
+    <!--    <PackageIcon>icon.png</PackageIcon>-->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="README.md"/>
+    <None Include="../LICENSE" Pack="true" PackagePath="LICENSE" Visible="true"/>
+    <!--    <None Include="../icon.png" Pack="true"/>-->
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Adjust the version as needed; "PrivateAssets=all" hides Roslyn from consumers. -->

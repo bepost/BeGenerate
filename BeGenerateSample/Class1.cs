@@ -1,10 +1,11 @@
-﻿using BeGenerate;
+﻿using BeGenerate.AutoInterface;
 
 namespace BeGenerateSample;
 
 [AutoInterface]
 internal class SampleService : ISampleService
 {
+    [ExcludeFromInterface]
     public int Test { get; set; }
 
     public int Add(int a, int b)

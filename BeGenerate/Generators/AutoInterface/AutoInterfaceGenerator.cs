@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using BeGenerate.AutoInterface;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -8,10 +9,12 @@ namespace BeGenerate.Generators.AutoInterface;
 [Generator]
 public sealed class AutoInterfaceGenerator : IIncrementalGenerator
 {
+    private static readonly string AutoInterfaceAttributeFullName = typeof(AutoInterfaceAttribute).FullName!;
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var infos = context.SyntaxProvider.ForAttributeWithMetadataName(
-            typeof(AutoInterfaceAttribute).FullName!,
+            AutoInterfaceAttributeFullName,
             (node, _) => node is ClassDeclarationSyntax,
             static (ctx, _) => new InterfaceData((INamedTypeSymbol) ctx.TargetSymbol));
 

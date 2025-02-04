@@ -1,12 +1,16 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using BeGenerate.AutoInterface;
 using Microsoft.CodeAnalysis;
 
 namespace BeGenerate.Generators.AutoInterface;
 
 internal sealed record InterfaceData
 {
+    private const string AutoInterfaceAttributeName = nameof(ExcludeFromInterfaceAttribute);
+    private static readonly string AutoInterfaceAttributeNamespace = typeof(ExcludeFromInterfaceAttribute).Namespace!;
+
     public InterfaceData(INamedTypeSymbol type)
     {
         NamespaceName = type.ContainingNamespace.ToDisplayString();
@@ -17,10 +21,14 @@ internal sealed record InterfaceData
                 .OfType<IMethodSymbol>()
                 .Where(
                     m => m is
-                    {
-                        DeclaredAccessibility: Accessibility.Public, IsStatic: false,
-                        MethodKind: MethodKind.Ordinary
-                    })
+                         {
+                             DeclaredAccessibility: Accessibility.Public, IsStatic: false,
+                             MethodKind: MethodKind.Ordinary
+                         } &&
+                         !m.GetAttributes()
+                             .Any(
+                                 a => a.AttributeClass is {Name : AutoInterfaceAttributeName} ac &&
+                                      ac.ContainingNamespace.ToDisplayString() == AutoInterfaceAttributeNamespace))
                 .Select(
                     m => new MethodData
                     {
@@ -41,7 +49,12 @@ internal sealed record InterfaceData
         [
             ..type.GetMembers()
                 .OfType<IPropertySymbol>()
-                .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.IsStatic)
+                .Where(
+                    p => p is {DeclaredAccessibility: Accessibility.Public, IsStatic: false} &&
+                         !p.GetAttributes()
+                             .Any(
+                                 a => a.AttributeClass is {Name : AutoInterfaceAttributeName} ac &&
+                                      ac.ContainingNamespace.ToDisplayString() == AutoInterfaceAttributeNamespace))
                 .Select(
                     p => new PropertyData
                     {

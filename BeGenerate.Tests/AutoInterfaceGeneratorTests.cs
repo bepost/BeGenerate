@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using BeGenerate.AutoInterface;
 using BeGenerate.Generators.AutoInterface;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
