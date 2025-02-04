@@ -39,7 +39,7 @@ public sealed class AutoInterfaceGeneratorTests
     {
         var driver = BuildDriver(
             """
-            using BeGenerate;
+            using BeGenerate.AutoInterface;
 
             namespace TestNamespace;
 
