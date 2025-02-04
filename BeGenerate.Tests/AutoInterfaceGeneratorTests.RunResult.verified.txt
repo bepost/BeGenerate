@@ -1,0 +1,21 @@
+﻿[
+  {
+    Generator: {},
+    GeneratedSources: [
+      {
+        HintName: IMyClass.g.cs,
+        Source:
+namespace TestNamespace;
+
+public partial interface IMyClass
+{
+
+    string GetMessage();
+    int Add(int a, int b);
+}
+
+      }
+    ],
+    Diagnostics: null
+  }
+]

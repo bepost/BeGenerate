@@ -1,0 +1,115 @@
+name: Build .NET Project
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: 🔨️ Test and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎️ Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for GitVersion
+
+      - name: 🔧 Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0"
+
+      - name: 📦 Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+
+      - name: 🔍 Determine Version with GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0
+
+      - name: 📦 Restore Dendencies
+        run: dotnet restore
+
+      - name: 🏗️ Build Solution
+        run: dotnet build
+          --no-restore
+          --configuration Release
+          -p:Version=${{ steps.gitversion.outputs.NuGetVersion }}
+          -p:AssemblyVersion=${{ steps.gitversion.outputs.AssemblySemVer }}
+          -p:FileVersion=${{ steps.gitversion.outputs.AssemblySemFileVer }}
+          -p:InformationalVersion=${{ steps.gitversion.outputs.InformationalVersion }}
+
+      - name: 🧪 Run Unit Tests
+        run: dotnet test
+          --no-build
+          --configuration Release
+          -p:CollectCoverage=true
+          -p:CoverletOutputFormat=lcov
+          -p:CoverletOutput=${PWD}/coverage/
+
+      - name: 📦 Install ReportGenerator
+        run: dotnet tool install
+          --global dotnet-reportgenerator-globaltool
+
+      - name: 📝 Generate Coverage Report
+        run: reportgenerator
+          -reports:./coverage/coverage.info
+          -targetdir:coverage-report
+          -reporttypes:"Html;MarkdownSummaryGithub"
+
+      - name: 📄 Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: coverage-report/
+
+      - name: 📃 Add Coverage to Summary
+        run: |
+          echo "### Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "[View Detailed Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          cat coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+      - name: 🎁 Package NuGet
+        run: dotnet pack BeGenerate
+          --output nupkg
+          --no-build
+          --no-restore
+          --configuration Release
+          -p:Version=${{ steps.gitversion.outputs.NuGetVersion }}
+
+      - name: 💾 Upload NuGet Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: nupkg/
+  
+  publish:
+    name: 🚀 Publish
+    needs:
+      - build
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Download NuGet Package
+        uses: actions/download-artifact@v4
+        with:
+          name: nupkg
+          path: nupkg/
+
+      - name: 🚀 Publish NuGet Package
+        run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: ⌨️ Publish Symbols Package
+        run: dotnet nuget push nupkg/*.snupkg --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
