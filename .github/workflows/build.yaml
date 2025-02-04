@@ -51,15 +51,19 @@ jobs:
           -p:CoverletOutputFormat=lcov
           -p:CoverletOutput=${PWD}/coverage/
 
+      - name: Generate Coverage Report
+        run: reportgenerator -reports:./coverage/coverage.info -targetdir:coverage-report -reporttypes:Html,MarkdownSummaryGithub
+
       - name: Upload Coverage Report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
-          path: coverage/
+          path: coverage-report/
 
       - name: Upload Coverage to GitHub Summary
         run: |
           echo "### Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          cat coverage-report/Summary.md >> $GITHUB_STEP_SUMMARY
           echo "[View Detailed Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
 
       - name: Package nuget
