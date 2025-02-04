@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace BeGenerate.Helpers;
 
-public static class DebugExtensions
+internal static class DebugExtensions
 {
     public static void Debug(this GeneratorExecutionContext context, string message)
     {

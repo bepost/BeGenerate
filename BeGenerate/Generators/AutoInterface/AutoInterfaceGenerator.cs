@@ -6,12 +6,13 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace BeGenerate.Generators.AutoInterface;
 
+/// <summary> Generates interfaces from classes marked with <see cref="AutoInterfaceAttribute" />. </summary>
 [Generator]
 public sealed class AutoInterfaceGenerator : IIncrementalGenerator
 {
     private static readonly string AutoInterfaceAttributeFullName = typeof(AutoInterfaceAttribute).FullName!;
 
-    public void Initialize(IncrementalGeneratorInitializationContext context)
+    void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
     {
         var infos = context.SyntaxProvider.ForAttributeWithMetadataName(
             AutoInterfaceAttributeFullName,
