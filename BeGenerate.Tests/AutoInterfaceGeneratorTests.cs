@@ -27,6 +27,27 @@ public sealed class AutoInterfaceGeneratorTests
         return driver.RunGenerators(compilation);
     }
 
+    private void CheckOutput(string code, string expected)
+    {
+        var driver = BuildDriver(
+            $$"""
+              using BeGenerate.AutoInterface;
+
+              namespace TestNamespace;
+
+              [AutoInterface]
+              public class MyClass
+              {
+                  {{code}}  
+              }
+              """);
+        var results = driver.GetRunResult();
+        var source = results.Results.Single()
+            .GeneratedSources.Single()
+            .SourceText.ToString();
+        Assert.Contains(expected, source);
+    }
+
     [Fact]
     public Task Driver()
     {
@@ -37,89 +58,25 @@ public sealed class AutoInterfaceGeneratorTests
     [Fact]
     public void GenerateGetter()
     {
-        var driver = BuildDriver(
-            """
-            using BeGenerate.AutoInterface;
-
-            namespace TestNamespace;
-
-            [AutoInterface]
-            public class MyClass
-            {
-                public string Message { get; }
-            }
-            """);
-        var results = driver.GetRunResult();
-        var source = results.Results.Single()
-            .GeneratedSources.Single()
-            .SourceText.ToString();
-        Assert.Contains("string Message { get; }", source);
+        CheckOutput("public string Message { get; }", "string Message { get; }");
     }
 
     [Fact]
     public void GenerateGetterSetter()
     {
-        var driver = BuildDriver(
-            """
-            using BeGenerate.AutoInterface;
-
-            namespace TestNamespace;
-
-            [AutoInterface]
-            public class MyClass
-            {
-                public string Message { get; set; }
-            }
-            """);
-        var results = driver.GetRunResult();
-        var source = results.Results.Single()
-            .GeneratedSources.Single()
-            .SourceText.ToString();
-        Assert.Contains("string Message { get; set; }", source);
+        CheckOutput("public string Message { get; set; }", "string Message { get; set; }");
     }
 
     [Fact]
     public void GenerateMethod()
     {
-        var driver = BuildDriver(
-            """
-            using BeGenerate.AutoInterface;
-
-            namespace TestNamespace;
-
-            [AutoInterface]
-            public class MyClass
-            {
-                public int Add(int a, int b) => a + b;
-            }
-            """);
-        var results = driver.GetRunResult();
-        var source = results.Results.Single()
-            .GeneratedSources.Single()
-            .SourceText.ToString();
-        Assert.Contains("int Add(int a, int b);", source);
+        CheckOutput("public int Add(int a, int b) => a + b;", "int Add(int a, int b);");
     }
 
     [Fact]
     public void GenerateSetter()
     {
-        var driver = BuildDriver(
-            """
-            using BeGenerate.AutoInterface;
-
-            namespace TestNamespace;
-
-            [AutoInterface]
-            public class MyClass
-            {
-                public string Message { set; }
-            }
-            """);
-        var results = driver.GetRunResult();
-        var source = results.Results.Single()
-            .GeneratedSources.Single()
-            .SourceText.ToString();
-        Assert.Contains("string Message { set; }", source);
+        CheckOutput("public string Message { set; }", "string Message { set; }");
     }
 
     [Fact]
