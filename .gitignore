@@ -18,6 +18,9 @@ obj/
 # Verifier output
 *.received.txt
 
-# Corerlet reports
+# Coverlet reports
 coverage/
 coverage-report/
+
+# Local output
+dist/
