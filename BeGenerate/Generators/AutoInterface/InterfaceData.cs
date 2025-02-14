@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Text;
+using System.Linq;
+using BeGenerate.Helpers;
 using Microsoft.CodeAnalysis;
 
 namespace BeGenerate.Generators.AutoInterface;
@@ -27,17 +28,11 @@ internal sealed record InterfaceData
     {
         var interfaceName = $"I{Name}";
 
-        var code = new StringBuilder();
-        code.AppendLine($"namespace {NamespaceName};");
-        code.AppendLine();
-        code.AppendLine($"public partial interface {interfaceName}");
-        code.AppendLine("{");
-        foreach (var property in Properties)
-            code.AppendLine($"    {property.Emit()}");
-        foreach (var method in Methods)
-            code.AppendLine($"    {method.Emit()}");
-        code.AppendLine("}");
-
+        var code = new CodeBuilder();
+        code.Line($"namespace {NamespaceName};")
+            .Line()
+            .Line($"public partial interface {interfaceName}")
+            .Block([..Properties.Select(p => p.Emit()), ..Methods.Select(m => m.Emit())]);
         return code.ToString();
     }
 }

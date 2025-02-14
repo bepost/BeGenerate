@@ -25,7 +25,13 @@ internal sealed record PropertyData
 
     public string Emit()
     {
-        return $"{Type} {Name} {{ {(HasGetter ? "get; " : "")}{(HasSetter ? "set; " : "")}}}";
+        var cb = new CodeBuilder();
+        cb.Append($"{Type} {Name} ")
+            .Append("{ ")
+            .AppendIf(HasGetter, "get; ")
+            .AppendIf(HasSetter, "set; ")
+            .Append("}");
+        return cb.ToString();
     }
 
     public static IEnumerable<PropertyData> From(INamedTypeSymbol type)

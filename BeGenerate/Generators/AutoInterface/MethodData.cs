@@ -24,7 +24,11 @@ internal sealed record MethodData
 
     public string Emit()
     {
-        return $"{ReturnType} {Name}({string.Join(", ", Parameters.Select(p => p.Emit()))});";
+        var cb = new CodeBuilder();
+        cb.Append($"{ReturnType} {Name}(")
+            .Join(", ", Parameters.Select(p => p.Emit()))
+            .Append(");");
+        return cb.ToString();
     }
 
     public static IEnumerable<MethodData> From(INamedTypeSymbol type)
