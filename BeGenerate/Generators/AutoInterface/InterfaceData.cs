@@ -59,7 +59,9 @@ internal sealed record InterfaceData
                     p => new PropertyData
                     {
                         Type = p.Type.ToDisplayString(),
-                        Name = p.Name
+                        Name = p.Name,
+                        HasSetter = p.SetMethod is not null,
+                        HasGetter = p.GetMethod is not null
                     })
         ];
     }
@@ -80,7 +82,11 @@ internal sealed record InterfaceData
         interfaceCode.AppendLine();
         interfaceCode.AppendLine($"public partial interface {interfaceName}");
         interfaceCode.AppendLine("{");
-        interfaceCode.AppendLine(string.Join("\n", Properties.Select(p => $"    {p.Type} {p.Name} {{ get; set; }}")));
+        interfaceCode.AppendLine(
+            string.Join(
+                "\n",
+                Properties.Select(
+                    p => $"    {p.Type} {p.Name} {{ {(p.HasGetter ? "get; " : "")}{(p.HasSetter ? "set; " : "")}}}")));
         interfaceCode.AppendLine(
             string.Join(
                 "\n",
