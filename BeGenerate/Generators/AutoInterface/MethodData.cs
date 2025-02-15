@@ -14,7 +14,7 @@ internal sealed record MethodData
     private MethodData(IMethodSymbol symbol)
     {
         ReturnType = symbol.ReturnType.ToDisplayString();
-        Name = symbol.Name;
+        Name = symbol.Name.EscapeKeyword();
         Parameters = [..ParameterData.From(symbol)];
         Generics = [..symbol.TypeParameters.Select(p => new GenericTypeParameterData(p))];
     }

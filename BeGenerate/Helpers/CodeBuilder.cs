@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -12,6 +13,18 @@ internal sealed class CodeBuilder
     private readonly StringBuilder _sb = new();
     private int _indentLevel;
     private bool IsNewLine => _sb.Length == 0 || _sb[^1] == '\n';
+
+    public CodeBuilder AnnotateGeneratedCode()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var name = assembly.GetName()
+            .Name;
+        var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                          ?.InformationalVersion ??
+                      "1.0.0";
+        Line($"""[System.CodeDom.Compiler.GeneratedCode("{name}", "{version}")]""");
+        return this;
+    }
 
     public CodeBuilder Append(string text)
     {
@@ -56,6 +69,12 @@ internal sealed class CodeBuilder
                 foreach (var line in lines)
                     Line(line);
             });
+    }
+
+    public CodeBuilder Directive(string directive, string value)
+    {
+        Line($"#{directive} {value}");
+        return this;
     }
 
     public CodeBuilder Indent(Action<CodeBuilder> action)

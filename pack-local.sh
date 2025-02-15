@@ -6,3 +6,5 @@ dotnet restore
 dotnet build --no-restore --configuration Release
 mkdir -p ./dist
 dotnet dotnet pack BeGenerate --output ./dist --no-build --no-restore --configuration Release -p:Version=$VERSION
+
+echo "Published version $VERSION"
