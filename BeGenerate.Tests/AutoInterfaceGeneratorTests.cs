@@ -1,4 +1,6 @@
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BeGenerate.AutoInterface;
@@ -55,6 +57,15 @@ public sealed partial class AutoInterfaceGeneratorTests
 
     [GeneratedRegex(@"^[^{]*\{\s*|\s*\}[^}]*$", RegexOptions.Singleline)]
     private static partial Regex TrimOutside();
+
+    private static void VersionScrubber(StringBuilder content)
+    {
+        var version = typeof(AutoInterfaceGenerator).Assembly
+                          .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                          ?.InformationalVersion ??
+                      "1.0.0";
+        content.Replace(version, "***");
+    }
 
     [Fact]
     public Task Driver()
@@ -118,7 +129,8 @@ public sealed partial class AutoInterfaceGeneratorTests
             }
             """);
         var results = driver.GetRunResult();
-        return Verifier.Verify(results.Results);
+        return Verifier.Verify(results.Results)
+            .AddScrubber(VersionScrubber);
     }
 
     [Fact]
@@ -138,6 +150,8 @@ public sealed partial class AutoInterfaceGeneratorTests
             }
             """);
         var results = driver.GetRunResult();
-        return Verifier.Verify(results.Results);
+
+        return Verifier.Verify(results.Results)
+            .AddScrubber(VersionScrubber);
     }
 }

@@ -8,7 +8,7 @@
 #nullable enable
 namespace TestNamespace;
 
-[System.CodeDom.Compiler.GeneratedCode("BeGenerate", "0.1.0+a676b6ca9e221ce80f53498c66957d15187817eb")]
+[System.CodeDom.Compiler.GeneratedCode("BeGenerate", "***")]
 public partial interface IMyClass
 {
     string Message { get; set; }
