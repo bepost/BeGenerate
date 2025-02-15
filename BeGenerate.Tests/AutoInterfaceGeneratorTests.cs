@@ -93,6 +93,14 @@ public sealed partial class AutoInterfaceGeneratorTests
     }
 
     [Fact]
+    public void GenerateMethodWithDefaults()
+    {
+        CheckOutput(
+            "public int Add(int a = 1, int b = default, object o = default, System.Threading.CancellationToken cts = default) => a + b;",
+            "int Add(int a = 1, int b = 0, object o = default, System.Threading.CancellationToken cts = default);");
+    }
+
+    [Fact]
     public void GenerateMethodWithGeneric()
     {
         CheckOutput("public T Add<T>(T a, T b) { throw new Exception(); }", "T Add<T>(T a, T b);");
