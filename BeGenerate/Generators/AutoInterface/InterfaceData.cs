@@ -12,7 +12,7 @@ internal sealed record InterfaceData
     public InterfaceData(INamedTypeSymbol symbol)
     {
         NamespaceName = symbol.ContainingNamespace.ToDisplayString();
-        Name = symbol.Name;
+        Name = symbol.Name.EscapeKeyword();
         Methods = [..MethodData.From(symbol)];
         Properties = [..PropertyData.From(symbol)];
         Generics = [..symbol.TypeParameters.Select(p => new GenericTypeParameterData(p))];
@@ -31,8 +31,10 @@ internal sealed record InterfaceData
         var interfaceName = $"I{Name}";
 
         var code = new CodeBuilder();
-        code.Line($"namespace {NamespaceName};")
+        code.Directive("nullable", "enable")
+            .Line($"namespace {NamespaceName};")
             .Line()
+            .AnnotateGeneratedCode()
             .Append($"public partial interface {interfaceName}")
             .ParensIf(Generics.Any(), Generics.Select(g => g.Name), "<>")
             .Join("", Generics.Select(g => g.EmitConstraint()))

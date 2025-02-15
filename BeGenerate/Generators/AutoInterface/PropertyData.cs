@@ -13,7 +13,7 @@ internal sealed record PropertyData
     private PropertyData(IPropertySymbol symbol)
     {
         Type = symbol.Type.ToDisplayString();
-        Name = symbol.Name;
+        Name = symbol.Name.EscapeKeyword();
         HasSetter = symbol.SetMethod is not null;
         HasGetter = symbol.GetMethod is not null;
     }
