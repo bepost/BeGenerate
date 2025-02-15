@@ -1,15 +1,17 @@
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BeGenerate.AutoInterface;
 using BeGenerate.Generators.AutoInterface;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Shouldly;
 using VerifyXunit;
 using Xunit;
 
 namespace BeGenerate.Tests;
 
-public sealed class AutoInterfaceGeneratorTests
+public sealed partial class AutoInterfaceGeneratorTests
 {
     private static GeneratorDriver BuildDriver(params string[] sources)
     {
@@ -31,6 +33,7 @@ public sealed class AutoInterfaceGeneratorTests
     {
         var driver = BuildDriver(
             $$"""
+              using System;
               using BeGenerate.AutoInterface;
 
               namespace TestNamespace;
@@ -45,8 +48,13 @@ public sealed class AutoInterfaceGeneratorTests
         var source = results.Results.Single()
             .GeneratedSources.Single()
             .SourceText.ToString();
-        Assert.Contains(expected, source);
+        var generatedSource = TrimOutside()
+            .Replace(source, "");
+        generatedSource.ShouldContain(expected);
     }
+
+    [GeneratedRegex(@"^[^{]*\{\s*|\s*\}[^}]*$", RegexOptions.Singleline)]
+    private static partial Regex TrimOutside();
 
     [Fact]
     public Task Driver()
@@ -74,6 +82,20 @@ public sealed class AutoInterfaceGeneratorTests
     }
 
     [Fact]
+    public void GenerateMethodWithGeneric()
+    {
+        CheckOutput("public T Add<T>(T a, T b) { throw new Exception(); }", "T Add<T>(T a, T b);");
+    }
+
+    [Fact]
+    public void GenerateMethodWithGenericAndConstraint()
+    {
+        CheckOutput(
+            "public T Add<T>(T a, T b) where T: class?, IEquatable<T>?, new() { throw new Exception(); }",
+            "T Add<T>(T a, T b) where T: class?, System.IEquatable<T>?, new();");
+    }
+
+    [Fact]
     public void GenerateSetter()
     {
         CheckOutput("public string Message { set; }", "string Message { set; }");
@@ -92,6 +114,26 @@ public sealed class AutoInterfaceGeneratorTests
             public class MyClass
             {
                 public int Add(int a, int b) => a + b;
+                public string Message { get; set; }
+            }
+            """);
+        var results = driver.GetRunResult();
+        return Verifier.Verify(results.Results);
+    }
+
+    [Fact]
+    public Task GenerateValidOutputGeneric()
+    {
+        var driver = BuildDriver(
+            """
+            using BeGenerate.AutoInterface;
+
+            namespace TestNamespace;
+
+            [AutoInterface]
+            public class MyClass<T> where T: class?, IEquatable<T>?, new()
+            {
+                public void Test(T a, T b) {}
                 public string Message { get; set; }
             }
             """);

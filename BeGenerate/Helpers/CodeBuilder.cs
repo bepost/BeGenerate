@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -24,7 +25,7 @@ internal sealed class CodeBuilder
                 ApplyIndent();
 
             _sb.Append(line);
-            if (i == lines.Length - 1)
+            if (i < lines.Length - 1)
                 _sb.Append("\n");
         }
 
@@ -77,6 +78,24 @@ internal sealed class CodeBuilder
     {
         Append(text + "\n");
         return this;
+    }
+
+    public CodeBuilder Parens(IEnumerable<string> items, string parens = "()", string separator = ", ")
+    {
+        Debug.Assert(parens.Length == 2, "Parens must be exactly 2 characters long");
+        Append($"{parens[0]}{string.Join(separator, items)}{parens[1]}");
+        return this;
+    }
+
+    public CodeBuilder ParensIf(
+        bool condition,
+        IEnumerable<string> items,
+        string parens = "()",
+        string separator = ", ")
+    {
+        if (!condition)
+            return this;
+        return Parens(items, parens, separator);
     }
 
     public override string ToString()

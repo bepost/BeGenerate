@@ -16,8 +16,10 @@ internal sealed record MethodData
         ReturnType = symbol.ReturnType.ToDisplayString();
         Name = symbol.Name;
         Parameters = [..ParameterData.From(symbol)];
+        Generics = [..symbol.TypeParameters.Select(p => new GenericTypeParameterData(p))];
     }
 
+    private ImmutableArray<GenericTypeParameterData> Generics { get; }
     private string Name { get; }
     private ImmutableArray<ParameterData> Parameters { get; }
     private string ReturnType { get; }
@@ -25,9 +27,11 @@ internal sealed record MethodData
     public string Emit()
     {
         var cb = new CodeBuilder();
-        cb.Append($"{ReturnType} {Name}(")
-            .Join(", ", Parameters.Select(p => p.Emit()))
-            .Append(");");
+        cb.Append($"{ReturnType} {Name}")
+            .ParensIf(Generics.Any(), Generics.Select(g => g.Name), "<>")
+            .Parens(Parameters.Select(p => p.Emit()))
+            .Join("", Generics.Select(p => p.EmitConstraint()))
+            .Append(";");
         return cb.ToString();
     }
 

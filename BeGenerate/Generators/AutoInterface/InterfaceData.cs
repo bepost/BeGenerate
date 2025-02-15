@@ -9,15 +9,17 @@ namespace BeGenerate.Generators.AutoInterface;
 [DebuggerDisplay("interface {InterfaceName}")]
 internal sealed record InterfaceData
 {
-    public InterfaceData(INamedTypeSymbol type)
+    public InterfaceData(INamedTypeSymbol symbol)
     {
-        NamespaceName = type.ContainingNamespace.ToDisplayString();
-        Name = type.Name;
-        Methods = [..MethodData.From(type)];
-        Properties = [..PropertyData.From(type)];
+        NamespaceName = symbol.ContainingNamespace.ToDisplayString();
+        Name = symbol.Name;
+        Methods = [..MethodData.From(symbol)];
+        Properties = [..PropertyData.From(symbol)];
+        Generics = [..symbol.TypeParameters.Select(p => new GenericTypeParameterData(p))];
     }
 
     public string Filename => $"{InterfaceName}.g.cs";
+    private ImmutableArray<GenericTypeParameterData> Generics { get; }
     private string InterfaceName => $"I{Name}";
     private ImmutableArray<MethodData> Methods { get; }
     private string Name { get; }
@@ -31,7 +33,10 @@ internal sealed record InterfaceData
         var code = new CodeBuilder();
         code.Line($"namespace {NamespaceName};")
             .Line()
-            .Line($"public partial interface {interfaceName}")
+            .Append($"public partial interface {interfaceName}")
+            .ParensIf(Generics.Any(), Generics.Select(g => g.Name), "<>")
+            .Join("", Generics.Select(g => g.EmitConstraint()))
+            .Line()
             .Block([..Properties.Select(p => p.Emit()), ..Methods.Select(m => m.Emit())]);
         return code.ToString();
     }
