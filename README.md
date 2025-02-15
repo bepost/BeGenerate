@@ -42,7 +42,7 @@ internal sealed class MyService : IMyService
 When you build your project, the code generator will automatically generate an interface for your class:
 
 ```csharp
-internal interface IMyService
+public interface IMyService
 {
     void MyMethod();
 }
