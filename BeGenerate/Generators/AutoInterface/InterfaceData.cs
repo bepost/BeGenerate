@@ -1,70 +1,25 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using BeGenerate.AutoInterface;
+using BeGenerate.Helpers;
 using Microsoft.CodeAnalysis;
 
 namespace BeGenerate.Generators.AutoInterface;
 
+[DebuggerDisplay("interface {InterfaceName}")]
 internal sealed record InterfaceData
 {
-    private const string AutoInterfaceAttributeName = nameof(ExcludeFromInterfaceAttribute);
-    private static readonly string AutoInterfaceAttributeNamespace = typeof(ExcludeFromInterfaceAttribute).Namespace!;
-
-    public InterfaceData(INamedTypeSymbol type)
+    public InterfaceData(INamedTypeSymbol symbol)
     {
-        NamespaceName = type.ContainingNamespace.ToDisplayString();
-        Name = type.Name;
-        Methods =
-        [
-            ..type.GetMembers()
-                .OfType<IMethodSymbol>()
-                .Where(
-                    m => m is
-                         {
-                             DeclaredAccessibility: Accessibility.Public, IsStatic: false,
-                             MethodKind: MethodKind.Ordinary
-                         } &&
-                         !m.GetAttributes()
-                             .Any(
-                                 a => a.AttributeClass is {Name : AutoInterfaceAttributeName} ac &&
-                                      ac.ContainingNamespace.ToDisplayString() == AutoInterfaceAttributeNamespace))
-                .Select(
-                    m => new MethodData
-                    {
-                        ReturnType = m.ReturnType.ToDisplayString(),
-                        Name = m.Name,
-                        Parameters =
-                        [
-                            ..m.Parameters.Select(
-                                p => new ParameterData
-                                {
-                                    Type = p.Type.ToDisplayString(),
-                                    Name = p.Name
-                                })
-                        ]
-                    })
-        ];
-        Properties =
-        [
-            ..type.GetMembers()
-                .OfType<IPropertySymbol>()
-                .Where(
-                    p => p is {DeclaredAccessibility: Accessibility.Public, IsStatic: false} &&
-                         !p.GetAttributes()
-                             .Any(
-                                 a => a.AttributeClass is {Name : AutoInterfaceAttributeName} ac &&
-                                      ac.ContainingNamespace.ToDisplayString() == AutoInterfaceAttributeNamespace))
-                .Select(
-                    p => new PropertyData
-                    {
-                        Type = p.Type.ToDisplayString(),
-                        Name = p.Name
-                    })
-        ];
+        NamespaceName = symbol.ContainingNamespace.ToDisplayString();
+        Name = symbol.Name;
+        Methods = [..MethodData.From(symbol)];
+        Properties = [..PropertyData.From(symbol)];
+        Generics = [..symbol.TypeParameters.Select(p => new GenericTypeParameterData(p))];
     }
 
     public string Filename => $"{InterfaceName}.g.cs";
+    private ImmutableArray<GenericTypeParameterData> Generics { get; }
     private string InterfaceName => $"I{Name}";
     private ImmutableArray<MethodData> Methods { get; }
     private string Name { get; }
@@ -75,20 +30,14 @@ internal sealed record InterfaceData
     {
         var interfaceName = $"I{Name}";
 
-        var interfaceCode = new StringBuilder();
-        interfaceCode.AppendLine($"namespace {NamespaceName};");
-        interfaceCode.AppendLine();
-        interfaceCode.AppendLine($"public partial interface {interfaceName}");
-        interfaceCode.AppendLine("{");
-        interfaceCode.AppendLine(string.Join("\n", Properties.Select(p => $"    {p.Type} {p.Name} {{ get; set; }}")));
-        interfaceCode.AppendLine(
-            string.Join(
-                "\n",
-                Methods.Select(
-                    m =>
-                        $"    {m.ReturnType} {m.Name}({string.Join(", ", m.Parameters.Select(p => $"{p.Type} {p.Name}"))});")));
-        interfaceCode.AppendLine("}");
-
-        return interfaceCode.ToString();
+        var code = new CodeBuilder();
+        code.Line($"namespace {NamespaceName};")
+            .Line()
+            .Append($"public partial interface {interfaceName}")
+            .ParensIf(Generics.Any(), Generics.Select(g => g.Name), "<>")
+            .Join("", Generics.Select(g => g.EmitConstraint()))
+            .Line()
+            .Block([..Properties.Select(p => p.Emit()), ..Methods.Select(m => m.Emit())]);
+        return code.ToString();
     }
 }

@@ -6,6 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 		.gitignore = .gitignore
 		GitVersion.yml = GitVersion.yml
+		pack-local.sh = pack-local.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeGenerate", "BeGenerate\BeGenerate.csproj", "{B17659B2-FAA6-4907-BFC9-DADA77218E7B}"
