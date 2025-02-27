@@ -93,10 +93,16 @@ public sealed partial class AutoInterfaceGeneratorTests
     }
 
     [Fact]
+    public void GenerateMethodWithAttributes()
+    {
+        CheckOutput("[DoesNotReturn] public void Quit() {}", "[DoesNotReturn]\n    void Quit();");
+    }
+
+    [Fact]
     public void GenerateMethodWithDefaults()
     {
         CheckOutput(
-            "public int Add(int a = 1, int b = default, object o = default, System.Threading.CancellationToken cts = default) => a + b;",
+            "public int Add(int a = 1, int b = 0, object o = default, System.Threading.CancellationToken cts = default) => a + b;",
             "int Add(int a = 1, int b = 0, object o = default, System.Threading.CancellationToken cts = default);");
     }
 
@@ -111,7 +117,15 @@ public sealed partial class AutoInterfaceGeneratorTests
     {
         CheckOutput(
             "public T Add<T>(T a, T b) where T: class?, IEquatable<T>?, new() { throw new Exception(); }",
-            "T Add<T>(T a, T b) where T: class?, System.IEquatable<T>?, new();");
+            "T Add<T>(T a, T b) where T: class?, IEquatable<T>?, new();");
+    }
+
+    [Fact]
+    public void GeneratePropertyWithAttributes()
+    {
+        CheckOutput(
+            "[DoesNotReturn] public string Message { [A] get; [B] set; }",
+            "[DoesNotReturn]\n    string Message { [A] get; [B] set; }");
     }
 
     [Fact]
@@ -134,6 +148,8 @@ public sealed partial class AutoInterfaceGeneratorTests
             {
                 public int Add(int a, int b) => a + b;
                 public string Message { get; set; }
+                [ExcludeFromInterface]
+                public int Test { get; set; }
             }
             """);
         var results = driver.GetRunResult();

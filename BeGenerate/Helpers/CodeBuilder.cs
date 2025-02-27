@@ -26,8 +26,13 @@ internal sealed class CodeBuilder
         return this;
     }
 
-    public CodeBuilder Append(string text)
+    public CodeBuilder Append(string? text)
     {
+        if (text == null)
+            return this;
+
+        text = text.Replace("\r", "");
+
         var lines = text.Split('\n');
 
         for (var i = 0; i < lines.Length; i++)
@@ -38,8 +43,13 @@ internal sealed class CodeBuilder
                 ApplyIndent();
 
             _sb.Append(line);
-            if (i < lines.Length - 1)
-                _sb.Append("\n");
+
+            if (i >= lines.Length - 1)
+                continue;
+
+            while (_sb[^1] == ' ')
+                _sb.Remove(_sb.Length - 1, 1);
+            _sb.Append('\n');
         }
 
         return this;
@@ -77,6 +87,16 @@ internal sealed class CodeBuilder
         return this;
     }
 
+    public CodeBuilder EnsureEmptyLine()
+    {
+        if (_sb.Length == 0 || (_sb.Length >= 1 && _sb[^1] != '\n'))
+            Line();
+        if (_sb.Length > 1 && (_sb[^1] != '\n' || _sb[^2] != '\n'))
+            Line();
+
+        return this;
+    }
+
     public CodeBuilder Indent(Action<CodeBuilder> action)
     {
         Line("{");
@@ -96,6 +116,13 @@ internal sealed class CodeBuilder
     public CodeBuilder Line(string text = "")
     {
         Append(text + "\n");
+        return this;
+    }
+
+    public CodeBuilder Lines(params IEnumerable<string> lines)
+    {
+        foreach (var line in lines)
+            Line(line);
         return this;
     }
 
