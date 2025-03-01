@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace BeGenerate.Helpers;
 
+[ExcludeFromCodeCoverage]
 internal static class TypeMatchExtensions
 {
     public static bool HasAttribute<T>(this ISymbol? symbol)
