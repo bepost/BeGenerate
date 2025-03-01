@@ -62,14 +62,16 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
         code.Line();
 
         code.AnnotateGeneratedCode();
-        code.Line("public partial interface ", $"I{symbol.Name}", node.TypeParameterList, " ", node.ConstraintClauses);
+        var interfaceName = $"I{symbol.Name}";
+        code.Line("public partial interface ", interfaceName, node.TypeParameterList, " ", node.ConstraintClauses);
         code.Block(
             () => {
                 node.Members.OfType<PropertyDeclarationSyntax>()
                     .Select(x => (Node: x, Symbol: (IPropertySymbol) ModelExtensions.GetDeclaredSymbol(model, x)!))
                     .Where(x => !x.Symbol.HasAttribute<ExcludeFromInterfaceAttribute>())
-                    // TODO Explicit declarations
-                    .Where(x => x.Symbol.DeclaredAccessibility == Accessibility.Public)
+                    .Where(
+                        x => x.Symbol.DeclaredAccessibility == Accessibility.Public ||
+                             x.Node.ExplicitInterfaceSpecifier?.Name.ToString() == interfaceName)
                     .ForEach(
                         x => {
                             code.Line(x.Node.AttributeLists);
@@ -104,14 +106,15 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
                 node.Members.OfType<MethodDeclarationSyntax>()
                     .Select(x => (Node: x, Symbol: (IMethodSymbol) ModelExtensions.GetDeclaredSymbol(model, x)!))
                     .Where(x => !x.Symbol.HasAttribute<ExcludeFromInterfaceAttribute>())
-                    // TODO Explicit declarations
-                    .Where(x => x.Symbol.DeclaredAccessibility == Accessibility.Public)
+                    .Where(
+                        x => x.Symbol.DeclaredAccessibility == Accessibility.Public ||
+                             x.Node.ExplicitInterfaceSpecifier?.Name.ToString() == interfaceName)
                     .ForEach(
                         x => {
                             x.Node.AttributeLists.ForEach(code.Line);
 
                             code.Append(x.Node.ReturnType, " ", x.Node.Identifier.Text);
-                            code.Append(x.Node.TypeParameterList?.ToString());
+                            code.Append(x.Node.TypeParameterList);
                             code.Append("(");
                             code.Join(", ", x.Node.ParameterList.Parameters);
                             code.Append(")");
