@@ -88,6 +88,20 @@ public sealed partial class AutoInterfaceGeneratorTests
     }
 
     [Fact]
+    public void GenerateArrowGetter()
+    {
+        CheckOutput("public string Message => string.Empty;", "string Message { get; }");
+    }
+
+    [Fact]
+    public void GenerateArrowGetterSetter()
+    {
+        CheckOutput(
+            "private string _m; public string Message { get => _m; set => _m = value; }",
+            "string Message { get; set; }");
+    }
+
+    [Fact]
     public void GenerateExplicitGetterSetter()
     {
         CheckOutput("string IMyClass.Message { get; set; }", "string Message { get; set; }");

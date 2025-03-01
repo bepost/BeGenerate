@@ -67,7 +67,7 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
         code.Block(
             () => {
                 node.Members.OfType<PropertyDeclarationSyntax>()
-                    .Select(x => (Node: x, Symbol: (IPropertySymbol) ModelExtensions.GetDeclaredSymbol(model, x)!))
+                    .Select(x => (Node: x, Symbol: model.GetDeclaredSymbol(x)!))
                     .Where(x => !x.Symbol.HasAttribute<ExcludeFromInterfaceAttribute>())
                     .Where(
                         x => x.Symbol.DeclaredAccessibility == Accessibility.Public ||
@@ -78,25 +78,23 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
                             code.Append(x.Node.Type, " ", x.Node.Identifier.Text);
                             code.Append(" {");
 
-                            var getAccessor =
-                                x.Node.AccessorList?.Accessors.FirstOrDefault(
-                                    a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
-                            if (getAccessor is not null &&
+                            if (x.Symbol.GetMethod is not null &&
                                 !x.Symbol.GetMethod.HasAttribute<ExcludeFromInterfaceAttribute>())
                             {
-                                foreach (var attributeList in getAccessor.AttributeLists)
-                                    code.Append(" ", attributeList);
+                                x.Node.AccessorList?.Accessors.Where(a => a.IsKind(SyntaxKind.GetAccessorDeclaration))
+                                    .Select(a => a.AttributeLists)
+                                    .Where(a => a.Any())
+                                    .ForEach(a => code.Append(" ", a));
                                 code.Append(" get;");
                             }
 
-                            var setAccessor =
-                                x.Node.AccessorList?.Accessors.FirstOrDefault(
-                                    a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
-                            if (setAccessor is not null &&
+                            if (x.Symbol.SetMethod is not null &&
                                 !x.Symbol.SetMethod.HasAttribute<ExcludeFromInterfaceAttribute>())
                             {
-                                foreach (var attributeList in setAccessor.AttributeLists)
-                                    code.Append(" ", attributeList);
+                                x.Node.AccessorList?.Accessors.Where(a => a.IsKind(SyntaxKind.SetAccessorDeclaration))
+                                    .Select(a => a.AttributeLists)
+                                    .Where(a => a.Any())
+                                    .ForEach(a => code.Append(" ", a));
                                 code.Append(" set;");
                             }
 
@@ -104,7 +102,7 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
                         });
 
                 node.Members.OfType<MethodDeclarationSyntax>()
-                    .Select(x => (Node: x, Symbol: (IMethodSymbol) ModelExtensions.GetDeclaredSymbol(model, x)!))
+                    .Select(x => (Node: x, Symbol: model.GetDeclaredSymbol(x)!))
                     .Where(x => !x.Symbol.HasAttribute<ExcludeFromInterfaceAttribute>())
                     .Where(
                         x => x.Symbol.DeclaredAccessibility == Accessibility.Public ||
