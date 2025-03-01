@@ -19,8 +19,8 @@ obj/
 *.received.txt
 
 # Coverlet reports
-coverage/
-coverage-report/
+**/coverage/
+**/coverage-report/
 
 # Local output
 dist/

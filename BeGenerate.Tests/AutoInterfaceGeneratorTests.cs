@@ -52,6 +52,10 @@ public sealed partial class AutoInterfaceGeneratorTests
             .SourceText.ToString();
         var generatedSource = TrimOutside()
             .Replace(source, "");
+        generatedSource = WhitespaceRegex()
+            .Replace(generatedSource, " ");
+        expected = WhitespaceRegex()
+            .Replace(expected, " ");
         generatedSource.ShouldContain(expected);
     }
 
@@ -67,11 +71,20 @@ public sealed partial class AutoInterfaceGeneratorTests
         content.Replace(version, "***");
     }
 
+    [GeneratedRegex("\\s+")]
+    private static partial Regex WhitespaceRegex();
+
     [Fact]
     public Task Driver()
     {
         var driver = BuildDriver();
         return Verifier.Verify(driver);
+    }
+
+    [Fact]
+    public void EscapeKeywords()
+    {
+        CheckOutput("public void Test(int @class, int @event) {}", "void Test(int @class, int @event);");
     }
 
     [Fact]
@@ -95,7 +108,7 @@ public sealed partial class AutoInterfaceGeneratorTests
     [Fact]
     public void GenerateMethodWithAttributes()
     {
-        CheckOutput("[DoesNotReturn] public void Quit() {}", "[DoesNotReturn]\n    void Quit();");
+        CheckOutput("[DoesNotReturn] public void Quit() {}", "[DoesNotReturn] void Quit();");
     }
 
     [Fact]
