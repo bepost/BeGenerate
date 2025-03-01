@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace BeGenerate.Helpers;
 
+[ExcludeFromCodeCoverage]
 internal sealed class CodeBuilder
 {
     private readonly StringBuilder _complete = new();
@@ -73,14 +75,6 @@ internal sealed class CodeBuilder
         _indent--;
         Debug.Assert(_indent >= 0);
         Line("}");
-    }
-
-    public void Indent(Action action)
-    {
-        _indent++;
-        action();
-        _indent--;
-        Debug.Assert(_indent >= 0);
     }
 
     public void Join(string separator, params IEnumerable<object?> sources)
