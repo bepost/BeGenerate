@@ -41,7 +41,7 @@ public sealed partial class AutoInterfaceGeneratorTests
               namespace TestNamespace;
 
               [AutoInterface]
-              public class MyClass
+              public class MyClass : IMyClass
               {
                   {{code}}  
               }
@@ -85,6 +85,18 @@ public sealed partial class AutoInterfaceGeneratorTests
     public void EscapeKeywords()
     {
         CheckOutput("public void Test(int @class, int @event) {}", "void Test(int @class, int @event);");
+    }
+
+    [Fact]
+    public void GenerateExplicitGetterSetter()
+    {
+        CheckOutput("string IMyClass.Message { get; set; }", "string Message { get; set; }");
+    }
+
+    [Fact]
+    public void GenerateExplicitMethod()
+    {
+        CheckOutput("int IMyClass.Add(int a, int b) => a + b;", "int Add(int a, int b);");
     }
 
     [Fact]
@@ -157,12 +169,15 @@ public sealed partial class AutoInterfaceGeneratorTests
             namespace TestNamespace;
 
             [AutoInterface]
-            public class MyClass
+            public class MyClass : IMyClass
             {
                 public int Add(int a, int b) => a + b;
                 public string Message { get; set; }
                 [ExcludeFromInterface]
                 public int Test { get; set; }
+                private void PrivateMethod() {}
+                protected void ProtectedMethod() {}
+                internal void InternalMethod() {}
             }
             """);
         var results = driver.GetRunResult();
