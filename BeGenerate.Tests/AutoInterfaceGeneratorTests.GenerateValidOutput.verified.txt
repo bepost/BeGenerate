@@ -16,7 +16,7 @@ using BeGenerate.AutoInterface;
 namespace TestNamespace;
 
 [System.CodeDom.Compiler.GeneratedCode("BeGenerate", "***")]
-public partial interface IMyClass
+public partial interface IMyClass: IEquatable<IMyClass>, IComparable
 {
     string Message { get; set; }
     int Add(int a, int b);
