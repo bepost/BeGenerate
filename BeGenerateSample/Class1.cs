@@ -20,6 +20,6 @@ internal class SampleService : ISampleService
     }
 }
 
-internal interface IMiddleware
+public interface IMiddleware
 {
 }
