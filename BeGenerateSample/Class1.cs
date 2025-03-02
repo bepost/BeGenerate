@@ -2,8 +2,8 @@
 
 namespace BeGenerateSample;
 
-[AutoInterface(Implements = [typeof(IMiddleware)])]
-[AutoInterfaceImplements<IMiddleware>]
+[AutoInterface]
+[Implements<IMiddleware>]
 internal class SampleService : ISampleService
 {
     [ExcludeFromInterface]
