@@ -42,7 +42,7 @@ internal sealed class MyService : IMyService
 When you build your project, the code generator will automatically generate an interface for your class:
 
 ```csharp
-public interface IMyService
+public partial interface IMyService
 {
     void MyMethod();
 }
@@ -66,6 +66,31 @@ internal sealed class MyService : IMyService
     {
         // Do something
     }
+}
+```
+
+If the generated interface should implement another interface, you can specify it using the `Implements<T>` attribute:
+
+```csharp
+using BeGenerate.AutoInterface;
+
+[AutoInterface]
+[Implements<IOtherInterface>]
+internal sealed class MyService : IMyService
+{
+    public void MyMethod()
+    {
+        // Do something
+    }
+}
+```
+
+When you build your project, the code generator will automatically generate an interface for your class:
+
+```csharp
+public partial interface IMyService : IOtherInterface 
+{
+    void MyMethod();
 }
 ```
 

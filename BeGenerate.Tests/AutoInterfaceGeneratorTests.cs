@@ -183,6 +183,8 @@ public sealed partial class AutoInterfaceGeneratorTests
             namespace TestNamespace;
 
             [AutoInterface]
+            [Implements<IEquatable<IMyClass>>]
+            [Implements<IComparable>]
             public class MyClass : IMyClass
             {
                 public int Add(int a, int b) => a + b;
@@ -192,6 +194,7 @@ public sealed partial class AutoInterfaceGeneratorTests
                 private void PrivateMethod() {}
                 protected void ProtectedMethod() {}
                 internal void InternalMethod() {}
+                void IComparable.OtherExplicit() {}
             }
             """);
         var results = driver.GetRunResult();

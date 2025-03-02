@@ -3,6 +3,7 @@
 namespace BeGenerateSample;
 
 [AutoInterface]
+[Implements<IMiddleware>]
 internal class SampleService : ISampleService
 {
     [ExcludeFromInterface]
@@ -17,4 +18,8 @@ internal class SampleService : ISampleService
     {
         return "Hello from SampleService!";
     }
+}
+
+public interface IMiddleware
+{
 }

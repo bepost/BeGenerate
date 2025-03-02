@@ -63,7 +63,26 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
 
         code.AnnotateGeneratedCode();
         var interfaceName = $"I{symbol.Name}";
-        code.Line("public partial interface ", interfaceName, node.TypeParameterList, " ", node.ConstraintClauses);
+        code.Append("public partial interface ", interfaceName, node.TypeParameterList);
+
+        var inherits = symbol.GetAttributes()
+            .Where(
+                a => a.AttributeClass is not null &&
+                     a.AttributeClass.IsGenericType &&
+                     a.AttributeClass.Name == nameof(ImplementsAttribute<object>))
+            .SelectMany(a => a.AttributeClass!.TypeArguments)
+            .ToArray();
+
+        if (inherits.Any())
+        {
+            code.Append(": ");
+            code.Join(", ", inherits.Select(x => x.ToDisplayString()));
+        }
+
+        if (node.ConstraintClauses.Any())
+            code.Append(" ", node.ConstraintClauses);
+
+        code.Line();
         code.Block(
             () => {
                 node.Members.OfType<PropertyDeclarationSyntax>()
