@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using BeGenerate.AutoInterface;
@@ -93,6 +94,7 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
                              x.Node.ExplicitInterfaceSpecifier?.Name.ToString() == interfaceName)
                     .ForEach(
                         x => {
+                            code.Line(GetDocumentation(x.Node));
                             code.Line(x.Node.AttributeLists);
                             code.Append(x.Node.Type, " ", x.Node.Identifier.Text);
                             code.Append(" {");
@@ -128,8 +130,8 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
                              x.Node.ExplicitInterfaceSpecifier?.Name.ToString() == interfaceName)
                     .ForEach(
                         x => {
-                            x.Node.AttributeLists.ForEach(code.Line);
-
+                            code.Line(GetDocumentation(x.Node));
+                            code.Line(x.Node.AttributeLists);
                             code.Append(x.Node.ReturnType, " ", x.Node.Identifier.Text);
                             code.Append(x.Node.TypeParameterList);
                             code.Append("(");
@@ -149,5 +151,24 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
             Filename = $"{symbol.ContainingNamespace?.ToDisplayString()}.I{symbol.Name}.g.cs",
             Code = code.ToString()
         };
+    }
+
+    private static string? GetDocumentation(CSharpSyntaxNode node)
+    {
+        var leadingTrivia = node.GetLeadingTrivia();
+        var xmlDocs = leadingTrivia.Select(trivia => trivia.GetStructure())
+            .OfType<DocumentationCommentTriviaSyntax>()
+            .FirstOrDefault();
+
+        // If found, return the string value of the XML
+        if (xmlDocs is null)
+            return null;
+
+        var docs = xmlDocs.ToFullString();
+        var lines = docs.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim());
+        var cleaned = string.Join('\n', lines);
+
+        return cleaned;
     }
 }
