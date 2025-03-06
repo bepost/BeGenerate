@@ -187,7 +187,16 @@ public sealed partial class AutoInterfaceGeneratorTests
             [Implements<IComparable>]
             public class MyClass : IMyClass
             {
+                /// <summary>
+                ///   This is a test method.
+                /// </summary>
+                /// <param name="a">A</param>
+                /// <param name="b">B</param>
+                /// <returns>Sum of A and B</returns>
                 public int Add(int a, int b) => a + b;
+                /// <summary>
+                ///   This is a test method.
+                /// </summary>
                 public string Message { get; set; }
                 [ExcludeFromInterface]
                 public int Test { get; set; }
