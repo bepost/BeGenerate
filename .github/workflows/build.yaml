@@ -35,6 +35,12 @@ jobs:
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0
 
+      - name: ✍️ Write Versions to Summary
+        run: |
+          echo "### Version" >> $GITHUB_STEP_SUMMARY
+          echo "**Semantic Version: $(GitVersion_SemVer)**" >> $GITHUB_STEP_SUMMARY
+          echo "Informational Version: $(GitVersion_InformationalVersion)" >> $GITHUB_STEP_SUMMARY          
+
       - name: 📦 Restore Dendencies
         run: dotnet restore
 
@@ -106,10 +112,5 @@ jobs:
 
       - name: 🚀 Publish NuGet Package
         run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }}
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
-
-      - name: ⌨️ Publish Symbols Package
-        run: dotnet nuget push nupkg/*.snupkg --api-key ${{ secrets.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
