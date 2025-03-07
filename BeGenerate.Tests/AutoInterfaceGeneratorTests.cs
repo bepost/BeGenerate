@@ -182,6 +182,9 @@ public sealed partial class AutoInterfaceGeneratorTests
 
             namespace TestNamespace;
 
+            /// <summary>
+            ///   This is a test interface.
+            /// </summary>
             [AutoInterface]
             [Implements<IEquatable<IMyClass>>]
             [Implements<IComparable>]

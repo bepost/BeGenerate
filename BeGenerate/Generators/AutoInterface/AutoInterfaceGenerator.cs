@@ -62,6 +62,7 @@ public sealed class AutoInterfaceGenerator : IIncrementalGenerator
             code.Line("namespace ", symbol.ContainingNamespace.ToDisplayString(), ";");
         code.Line();
 
+        code.Line(GetDocumentation(node));
         code.AnnotateGeneratedCode();
         var interfaceName = $"I{symbol.Name}";
         code.Append("public partial interface ", interfaceName, node.TypeParameterList);
