@@ -1,13 +1,20 @@
-﻿using BeGenerate.AutoInterface;
+﻿using System;
+using System.Collections;
+using BeGenerate.AutoInterface;
 
 namespace BeGenerateSample;
 
 [AutoInterface]
-[Implements<IMiddleware>]
+[Implements<IEnumerable>]
 internal class SampleService : ISampleService
 {
     [ExcludeFromInterface]
     public int Test { get; set; }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
 
     public int Add(int a, int b)
     {
@@ -18,8 +25,4 @@ internal class SampleService : ISampleService
     {
         return "Hello from SampleService!";
     }
-}
-
-public interface IMiddleware
-{
 }

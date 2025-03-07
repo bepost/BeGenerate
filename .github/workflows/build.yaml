@@ -95,7 +95,7 @@ jobs:
     name: 🚀 Publish
     needs:
       - build
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: 📦 Download NuGet Package

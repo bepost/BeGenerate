@@ -15,6 +15,9 @@ using BeGenerate.AutoInterface;
 
 namespace TestNamespace;
 
+/// <summary>
+///   This is a test interface.
+/// </summary>
 [System.CodeDom.Compiler.GeneratedCode("BeGenerate", "***")]
 public partial interface IMyClass: IEquatable<IMyClass>, IComparable
 {
