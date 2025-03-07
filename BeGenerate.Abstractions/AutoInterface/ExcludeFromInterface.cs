@@ -2,7 +2,8 @@
 
 namespace BeGenerate.AutoInterface;
 
-[AttributeUsage(AttributeTargets.Event | AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
+/// <summary> Annotate a class member with this attribute to exclude a member from the generated interface. </summary>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false)]
 public sealed class ExcludeFromInterfaceAttribute : Attribute
 {
 }
