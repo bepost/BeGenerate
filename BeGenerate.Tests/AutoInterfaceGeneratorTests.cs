@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,28 +16,45 @@ namespace BeGenerate.Tests;
 
 public sealed partial class AutoInterfaceGeneratorTests
 {
-    private static GeneratorDriver BuildDriver(params string[] sources)
+    private static GeneratorDriver BuildDriver(string source)
     {
+        var systemRuntimePath = Path.Combine(
+            Path.GetDirectoryName(typeof(object).Assembly.Location)!,
+            "System.Runtime.dll");
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(source);
         var compilation = CSharpCompilation.Create(
             "compilation",
-            sources.Select(s => CSharpSyntaxTree.ParseText(s)),
+            [syntaxTree],
             [
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(systemRuntimePath),
                 MetadataReference.CreateFromFile(typeof(AutoInterfaceAttribute).Assembly.Location)
             ],
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var generator = new AutoInterfaceGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
-        return driver.RunGenerators(compilation);
+        var driver = CSharpGeneratorDriver.Create(new AutoInterfaceGenerator());
+        var generatorResult = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out _);
+
+        var compilationResult = updatedCompilation.Emit(new MemoryStream());
+        if (compilationResult.Success)
+            return generatorResult;
+
+        var errors = compilationResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)
+            .Select(d => $"{d.Id}: {d.GetMessage()} (at {d.Location})")
+            .ToList();
+
+        Assert.Fail($"Compilation failed with {errors.Count} error(s):\n" + string.Join("\n", errors));
+        return generatorResult;
     }
 
-    private void CheckOutput(string code, string expected)
+    private static void CheckOutput(string code, string expected)
     {
         var driver = BuildDriver(
             $$"""
               using System;
               using BeGenerate.AutoInterface;
+              using System.Diagnostics.CodeAnalysis;
 
               namespace TestNamespace;
 
@@ -77,7 +95,7 @@ public sealed partial class AutoInterfaceGeneratorTests
     [Fact]
     public Task Driver()
     {
-        var driver = BuildDriver();
+        var driver = BuildDriver("");
         return Verifier.Verify(driver);
     }
 
@@ -102,6 +120,23 @@ public sealed partial class AutoInterfaceGeneratorTests
     }
 
     [Fact]
+    public Task GenerateCustomNameOutput()
+    {
+        var driver = BuildDriver(
+            """
+            using BeGenerate.AutoInterface;
+
+            namespace TestNamespace;
+
+            [AutoInterface(Name = "Test")]
+            public class MyClass : Test;
+            """);
+        var results = driver.GetRunResult();
+        return Verifier.Verify(results.Results)
+            .AddScrubber(VersionScrubber);
+    }
+
+    [Fact]
     public void GenerateExplicitGetterSetter()
     {
         CheckOutput("string IMyClass.Message { get; set; }", "string Message { get; set; }");
@@ -123,6 +158,23 @@ public sealed partial class AutoInterfaceGeneratorTests
     public void GenerateGetterSetter()
     {
         CheckOutput("public string Message { get; set; }", "string Message { get; set; }");
+    }
+
+    [Fact]
+    public Task GenerateInternalOutput()
+    {
+        var driver = BuildDriver(
+            """
+            using BeGenerate.AutoInterface;
+
+            namespace TestNamespace;
+
+            [AutoInterface(Accessibility = InterfaceAccessibility.Internal)]
+            public class MyClass : IMyClass;
+            """);
+        var results = driver.GetRunResult();
+        return Verifier.Verify(results.Results)
+            .AddScrubber(VersionScrubber);
     }
 
     [Fact]
@@ -160,21 +212,7 @@ public sealed partial class AutoInterfaceGeneratorTests
     }
 
     [Fact]
-    public void GeneratePropertyWithAttributes()
-    {
-        CheckOutput(
-            "[DoesNotReturn] public string Message { [A] get; [B] set; }",
-            "[DoesNotReturn]\n    string Message { [A] get; [B] set; }");
-    }
-
-    [Fact]
-    public void GenerateSetter()
-    {
-        CheckOutput("public string Message { set; }", "string Message { set; }");
-    }
-
-    [Fact]
-    public Task GenerateValidOutput()
+    public Task GenerateNoneAccessorOutput()
     {
         var driver = BuildDriver(
             """
@@ -182,13 +220,50 @@ public sealed partial class AutoInterfaceGeneratorTests
 
             namespace TestNamespace;
 
+            [AutoInterface(Accessibility = InterfaceAccessibility.None)]
+            public class MyClass : IMyClass;
+            """);
+        var results = driver.GetRunResult();
+        return Verifier.Verify(results.Results)
+            .AddScrubber(VersionScrubber);
+    }
+
+    [Fact]
+    public void GeneratePropertyWithAttributes()
+    {
+        CheckOutput(
+            """[Obsolete] public string Message { [Obsolete("get")] get; [Obsolete("set")] set; }""",
+            """[Obsolete] string Message { [Obsolete("get")] get; [Obsolete("set")] set; }""");
+    }
+
+    [Fact]
+    public void GenerateSetter()
+    {
+        CheckOutput("public string Message { set {} }", "string Message { set; }");
+    }
+
+    [Fact]
+    public Task GenerateValidOutput()
+    {
+        var driver = BuildDriver(
+            """
+            using System;
+            using BeGenerate.AutoInterface;
+
+            namespace TestNamespace;
+
+            interface IOther
+            {
+                void OtherExplicit();
+            }
+
             /// <summary>
             ///   This is a test interface.
             /// </summary>
-            [AutoInterface]
+            [AutoInterface(Accessibility = InterfaceAccessibility.Public)]
             [Implements<IEquatable<IMyClass>>]
             [Implements<IComparable>]
-            public class MyClass : IMyClass
+            public class MyClass : IMyClass, IOther
             {
                 /// <summary>
                 ///   This is a test method.
@@ -206,7 +281,9 @@ public sealed partial class AutoInterfaceGeneratorTests
                 private void PrivateMethod() {}
                 protected void ProtectedMethod() {}
                 internal void InternalMethod() {}
-                void IComparable.OtherExplicit() {}
+                void IOther.OtherExplicit() {}
+                bool IEquatable<IMyClass>.Equals(IMyClass? x)=>false;
+                int IComparable.CompareTo(object? x)=>0;
             }
             """);
         var results = driver.GetRunResult();
@@ -220,6 +297,7 @@ public sealed partial class AutoInterfaceGeneratorTests
         var driver = BuildDriver(
             """
             using BeGenerate.AutoInterface;
+            using System;
 
             namespace TestNamespace;
 

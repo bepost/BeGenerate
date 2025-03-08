@@ -1,10 +1,8 @@
 ﻿using System;
-using JetBrains.Annotations;
 
 namespace BeGenerate.AutoInterface;
 
 /// <summary> Annotate a class with this attribute to generate an interface with the same name. </summary>
-[PublicAPI]
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class AutoInterfaceAttribute : Attribute
 {
