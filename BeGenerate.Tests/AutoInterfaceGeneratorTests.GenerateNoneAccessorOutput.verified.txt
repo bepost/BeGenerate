@@ -12,15 +12,12 @@
 #nullable enable
 
 using BeGenerate.AutoInterface;
-using System;
 
 namespace TestNamespace;
 
 [System.CodeDom.Compiler.GeneratedCode("BeGenerate", "***")]
-public partial interface IMyClass<T> where T: class?, IEquatable<T>?, new()
+partial interface IMyClass
 {
-    string Message { get; set; }
-    void Test(T a, T b);
 }
 
       }

@@ -1,28 +1,17 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using BeGenerate.AutoInterface;
 
 namespace BeGenerateSample;
 
-[AutoInterface]
+[AutoInterface(Name = "Test")]
 [Implements<IEnumerable>]
-internal class SampleService : ISampleService
+internal class SampleService : Test
 {
-    [ExcludeFromInterface]
-    public int Test { get; set; }
-
+    [DoesNotReturn]
     IEnumerator IEnumerable.GetEnumerator()
     {
         throw new NotImplementedException();
-    }
-
-    public int Add(int a, int b)
-    {
-        return a + b;
-    }
-
-    public string GetMessage()
-    {
-        return "Hello from SampleService!";
     }
 }

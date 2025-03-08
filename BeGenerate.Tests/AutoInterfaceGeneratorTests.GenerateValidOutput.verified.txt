@@ -12,6 +12,7 @@
 #nullable enable
 
 using BeGenerate.AutoInterface;
+using System;
 
 namespace TestNamespace;
 
