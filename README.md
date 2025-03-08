@@ -36,6 +36,11 @@ internal sealed class MyService : IMyService
     {
         // Do something
     }
+    
+    void IMyService.MyExplicitMethod()
+    {
+        // Do something
+    }
 }
 ```
 
@@ -45,6 +50,7 @@ When you build your project, the code generator will automatically generate an i
 public partial interface IMyService
 {
     void MyMethod();
+    void MyExplicitMethod();
 }
 ```
 
@@ -72,26 +78,43 @@ internal sealed class MyService : IMyService
 If the generated interface should implement another interface, you can specify it using the `Implements<T>` attribute:
 
 ```csharp
-using BeGenerate.AutoInterface;
-
 [AutoInterface]
 [Implements<IOtherInterface>]
 internal sealed class MyService : IMyService
-{
-    public void MyMethod()
-    {
-        // Do something
-    }
-}
+...
 ```
 
 When you build your project, the code generator will automatically generate an interface for your class:
 
 ```csharp
 public partial interface IMyService : IOtherInterface 
-{
-    void MyMethod();
-}
+...
+```
+
+You can give your interface a custom name by specifying it in the `Name` argument of the `AutoInterface` attribute:
+
+```csharp
+[AutoInterface(Name = "IMyCustomService")]
+internal sealed class MyService : IMyCustomService
+...
+```
+
+If you don't want your interface to be public, you can also alter the visibility of the generated interface:
+
+```csharp
+[AutoInterface(Accessibility = InterfaceAccessibility.Internal)]
+internal sealed class MyService : IMyCustomService
+...
+```
+
+Or even remove th access modifier entirely, so you can define it yourself using the partial keyword:
+
+```csharp
+[AutoInterface(Accessibility = InterfaceAccessibility.None)]
+internal sealed class MyService : IMyCustomService;
+
+public partial interface IMyCustomService;
+...
 ```
 
 ## Contributing
