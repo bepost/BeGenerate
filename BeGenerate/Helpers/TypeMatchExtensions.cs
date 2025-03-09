@@ -9,7 +9,7 @@ namespace BeGenerate.Helpers;
 [ExcludeFromCodeCoverage]
 internal static class TypeMatchExtensions
 {
-    public static IEnumerable<T> GetAttributeInstances<T>(this INamedTypeSymbol symbol)
+    public static IEnumerable<T> GetAttributeInstances<T>(this ISymbol symbol)
         where T : Attribute
     {
         var attributes = symbol.GetAttributes()
