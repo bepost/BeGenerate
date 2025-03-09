@@ -54,7 +54,7 @@ internal class GeneratorCodeBuilder : CodeBuilder
         var projectDir = Path.GetDirectoryName(
             Model.Compilation.SyntaxTrees.First()
                 .FilePath);
-        var path = Path.GetRelativePath(projectDir!, filePath);
+        var path = projectDir is null ? filePath : Path.GetRelativePath(projectDir, filePath);
 
         Line(
             $"""

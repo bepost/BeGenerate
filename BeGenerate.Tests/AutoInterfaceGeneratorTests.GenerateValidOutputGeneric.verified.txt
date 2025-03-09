@@ -16,12 +16,16 @@ using System;
 
 namespace TestNamespace;
 
+#line 6 "sample.cs"
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 [System.CodeDom.Compiler.GeneratedCode("BeGenerate", "***")]
 public partial interface IMyClass<T> where T: class?, IEquatable<T>?, new()
 {
     string Message { get; set; }
+
     void Test(T a, T b);
 }
+#line default
 
       }
     ],

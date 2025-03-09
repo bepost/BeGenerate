@@ -86,6 +86,8 @@ internal class CodeBuilder
         action();
         _indent--;
         Debug.Assert(_indent >= 0);
+        if (_lastWasEmpty)
+            _complete.Remove(_complete.Length - 1, 1);
         Line("}");
     }
 

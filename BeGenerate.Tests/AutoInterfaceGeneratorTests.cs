@@ -22,7 +22,7 @@ public sealed partial class AutoInterfaceGeneratorTests
             Path.GetDirectoryName(typeof(object).Assembly.Location)!,
             "System.Runtime.dll");
 
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, path: "C:\\sample.cs");
         var compilation = CSharpCompilation.Create(
             "compilation",
             [syntaxTree],

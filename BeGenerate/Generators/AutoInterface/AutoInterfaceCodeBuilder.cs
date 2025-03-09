@@ -49,15 +49,17 @@ internal sealed class AutoInterfaceCodeBuilder : GeneratorCodeBuilder
         EmitUsings(node);
         EmitNamespaceDeclaration(symbol);
 
-        EmitGeneratedInterface(node, symbol);
+        EmitInterface(node, symbol);
         return ToString();
     }
 
-    private void EmitGeneratedInterface(ClassDeclarationSyntax node, ISymbol symbol)
+    private void EmitInterface(ClassDeclarationSyntax node, ISymbol symbol)
     {
         EmitXmlDocumentationFor(node);
+        EmitLocationFor(node);
+        // TODO: Add attributes
+        Line("[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]");
         EmitGeneratedCodeAttribute();
-
         switch (_attribute.Accessibility)
         {
             case InterfaceAccessibility.Public:
@@ -97,6 +99,7 @@ internal sealed class AutoInterfaceCodeBuilder : GeneratorCodeBuilder
                 EmitInterfaceProperties(node);
                 EmitInterfaceMethods(node);
             });
+        EmitLocationFor(null);
     }
 
     private void EmitInterfaceMethods(ClassDeclarationSyntax node)
@@ -107,7 +110,7 @@ internal sealed class AutoInterfaceCodeBuilder : GeneratorCodeBuilder
             .Where(
                 x => x.Symbol.DeclaredAccessibility == Accessibility.Public ||
                      x.Node.ExplicitInterfaceSpecifier?.Name.ToString() == _name)
-            .ForEach(x => EmitMember(x.Node));
+            .ForEach(x => EmitMethod(x.Node));
     }
 
     private void EmitInterfaceProperties(ClassDeclarationSyntax node)
@@ -121,7 +124,7 @@ internal sealed class AutoInterfaceCodeBuilder : GeneratorCodeBuilder
             .ForEach(x => EmitProperty(x.Node, x.Symbol));
     }
 
-    private void EmitMember(MethodDeclarationSyntax node)
+    private void EmitMethod(MethodDeclarationSyntax node)
     {
         EmitXmlDocumentationFor(node);
         Line(node.AttributeLists);
@@ -132,6 +135,7 @@ internal sealed class AutoInterfaceCodeBuilder : GeneratorCodeBuilder
         Append(")");
         node.ConstraintClauses.ForEach(x => Append(" ", x));
         Line(";");
+        Line();
     }
 
     private void EmitNamespaceDeclaration(ISymbol symbol)
@@ -178,6 +182,7 @@ internal sealed class AutoInterfaceCodeBuilder : GeneratorCodeBuilder
         }
 
         Line(" }");
+        Line();
     }
 
     private void EmitUsings(ClassDeclarationSyntax node)
