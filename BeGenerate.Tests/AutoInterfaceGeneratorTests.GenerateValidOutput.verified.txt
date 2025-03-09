@@ -19,6 +19,8 @@ namespace TestNamespace;
 /// <summary>
 ///   This is a test interface.
 /// </summary>
+#line 14 "sample.cs"
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 [System.CodeDom.Compiler.GeneratedCode("BeGenerate", "***")]
 public partial interface IMyClass: IEquatable<IMyClass>, IComparable
 {
@@ -26,6 +28,7 @@ public partial interface IMyClass: IEquatable<IMyClass>, IComparable
     ///   This is a test method.
     /// </summary>
     string Message { get; set; }
+
     /// <summary>
     ///   This is a test method.
     /// </summary>
@@ -34,6 +37,7 @@ public partial interface IMyClass: IEquatable<IMyClass>, IComparable
     /// <returns>Sum of A and B</returns>
     int Add(int a, int b);
 }
+#line default
 
       }
     ],

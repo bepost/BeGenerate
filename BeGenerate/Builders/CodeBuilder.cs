@@ -4,17 +4,29 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace BeGenerate.Helpers;
+namespace BeGenerate.Builders;
 
 [ExcludeFromCodeCoverage]
-internal sealed class CodeBuilder
+internal class CodeBuilder
 {
     private readonly StringBuilder _complete = new();
     private readonly StringBuilder _current = new();
     private int _indent;
     private bool _lastWasEmpty = true;
 
-    public void Append(object? source)
+    public override string ToString()
+    {
+        if (_current.Length > 0 || !_lastWasEmpty)
+        {
+            return _complete +
+                   _current.ToString()
+                       .TrimEnd();
+        }
+
+        return _complete.ToString();
+    }
+
+    protected void Append(object? source)
     {
         if (source is null)
             return;
@@ -22,13 +34,13 @@ internal sealed class CodeBuilder
         Append(source.ToString());
     }
 
-    public void Append(params IEnumerable<object?> sources)
+    protected void Append(params IEnumerable<object?> sources)
     {
         foreach (var source in sources)
             Append(source);
     }
 
-    public void Append(string? text)
+    protected void Append(string? text)
     {
         if (text == null)
             return;
@@ -36,7 +48,7 @@ internal sealed class CodeBuilder
             Append(c);
     }
 
-    public void Append(char c)
+    protected void Append(char c)
     {
         switch (c)
         {
@@ -67,17 +79,19 @@ internal sealed class CodeBuilder
         }
     }
 
-    public void Block(Action action)
+    protected void Block(Action action)
     {
         Line("{");
         _indent++;
         action();
         _indent--;
         Debug.Assert(_indent >= 0);
+        if (_lastWasEmpty)
+            _complete.Remove(_complete.Length - 1, 1);
         Line("}");
     }
 
-    public void Join(string separator, params IEnumerable<object?> sources)
+    protected void Join(string separator, params IEnumerable<object?> sources)
     {
         var first = true;
 
@@ -90,7 +104,7 @@ internal sealed class CodeBuilder
         }
     }
 
-    public void Line(string? line = "")
+    protected void Line(string? line = "")
     {
         if (line == null)
             return;
@@ -99,7 +113,7 @@ internal sealed class CodeBuilder
         Append('\n');
     }
 
-    public void Line(object? source)
+    protected void Line(object? source)
     {
         if (source is null)
             return;
@@ -107,7 +121,7 @@ internal sealed class CodeBuilder
         Line(source.ToString());
     }
 
-    public void Line(params IEnumerable<object?> sources)
+    protected void Line(params IEnumerable<object?> sources)
     {
         var anything = false;
         foreach (var source in sources)
@@ -120,17 +134,5 @@ internal sealed class CodeBuilder
 
         if (anything)
             Append('\n');
-    }
-
-    public override string ToString()
-    {
-        if (_current.Length > 0 || !_lastWasEmpty)
-        {
-            return _complete +
-                   _current.ToString()
-                       .TrimEnd();
-        }
-
-        return _complete.ToString();
     }
 }

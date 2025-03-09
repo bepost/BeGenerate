@@ -14,4 +14,8 @@ internal class SampleService : Test
     {
         throw new NotImplementedException();
     }
+
+    public void Test()
+    {
+    }
 }

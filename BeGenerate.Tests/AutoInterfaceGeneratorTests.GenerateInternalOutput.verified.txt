@@ -15,10 +15,13 @@ using BeGenerate.AutoInterface;
 
 namespace TestNamespace;
 
+#line 5 "sample.cs"
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 [System.CodeDom.Compiler.GeneratedCode("BeGenerate", "***")]
 internal partial interface IMyClass
 {
 }
+#line default
 
       }
     ],
